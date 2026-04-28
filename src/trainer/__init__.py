@@ -11,6 +11,7 @@ from trainer.unlearn.grad_diff import GradDiff
 from trainer.unlearn.npo import NPO, DrNPO, GroupNPO
 from trainer.unlearn.satimp import DrSatImp, GroupSatImp, SatImp
 from trainer.unlearn.simnpo import DrSimNPO, GroupSimNPO, SimNPO
+from trainer.unlearn.tnpo import TNPO, DrTNPO
 
 logger = logging.getLogger(__name__)
 
@@ -95,3 +96,6 @@ _register_trainer(GroupSimNPO)
 _register_trainer(SatImp)
 _register_trainer(DrSatImp)
 _register_trainer(GroupSatImp)
+
+_register_trainer(TNPO)
+_register_trainer(DrTNPO)

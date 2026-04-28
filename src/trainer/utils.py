@@ -135,6 +135,37 @@ def compute_satimp_loss(model, inputs, beta1, beta2):
     return forget_loss, outputs
 
 
+def compute_tnpo_loss(model, ref_model, inputs, beta=1.0):
+    # Token-wise NPO (TNPO) from Wang et al. (2025) equation 6
+    outputs = model(**inputs)
+    labels = inputs["labels"]
+    shift_labels = labels[..., 1:].contiguous()
+    valid_mask = shift_labels != -100  # (B, T)
+
+    loss_fct = nn.CrossEntropyLoss(ignore_index=-100, reduction="none")
+
+    token_nll = loss_fct(
+        outputs.logits[..., :-1, :].contiguous().view(-1, outputs.logits.shape[-1]),
+        shift_labels.view(-1),
+    ).view(shift_labels.shape)  # (B, T)
+
+    with torch.no_grad():
+        ref_outputs = ref_model(**inputs)
+    ref_token_nll = loss_fct(
+        ref_outputs.logits[..., :-1, :].contiguous().view(-1, ref_outputs.logits.shape[-1]),
+        shift_labels.view(-1),
+    ).view(shift_labels.shape)  # (B, T)
+
+    p_theta = torch.exp(-token_nll)
+    p_ref = torch.exp(-ref_token_nll)
+    p_theta_beta = p_theta ** beta
+    p_ref_beta = p_ref ** beta
+    w_tnpo = (2 * p_theta_beta) / (p_theta_beta + p_ref_beta)
+    # Gradient ascent on weighted log probabilities
+    seq_loss = -(w_tnpo * token_nll * valid_mask).sum(dim=-1) / valid_mask.sum(dim=-1).clamp(min=1)
+    return seq_loss, outputs
+
+
 def compute_forget_group(model, forget_inputs, sampling_ratio=0.5):
     per_seq_nll, _ = compute_batch_nll(model, forget_inputs)
     valid_token_counts = (forget_inputs["labels"][..., 1:] != -100).sum(
