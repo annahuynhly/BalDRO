@@ -1,4 +1,5 @@
-export CUDA_VISIBLE_DEVICES=0,
+export CUDA_VISIBLE_DEVICES=0
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 REPORTTO="mlflow"
 
@@ -10,7 +11,7 @@ splits=(
 PRETRAINED_PATH="open-unlearning/tofu_Llama-2-7b-chat-hf_full"
 
 lr_set=("1e-5" "2e-5" "5e-5")
-bz_set=("8 2" "8 4")
+bz_set=("2 8")
 epoch_set=(5 10)
 
 for split in "${splits[@]}"; do
