@@ -49,4 +49,4 @@ python src/train.py --config-name=unlearn.yaml \
     trainer.method_args.beta_dv_retain=1.0 \
     trainer.method_args.forget_dro=True \
     trainer.method_args.retain_dro=False \
-    trainer.method_args.log_ori_loss=True
+    +trainer.method_args.log_ori_loss=True
