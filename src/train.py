@@ -112,7 +112,7 @@ def training(cfg):
             trainer.save_state()
             trainer.save_model(trainer_args.output_dir)
 
-    if trainer_args.do_eval:
+    if trainer_args.do_eval and (not trainer_args.do_train or trainer_args.eval_strategy == "no"):
         trainer.evaluate(metric_key_prefix="eval")
 
 
