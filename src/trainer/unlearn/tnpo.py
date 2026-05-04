@@ -81,18 +81,20 @@ class DrTNPO(TNPO):
             "labels": retain_inputs["labels"],
         }
 
-        assert (
-            self.retain_loss_type == "NLL"
-        ), "DRO only supports NLL retain loss currently."
-        retain_loss, _ = compute_batch_nll(model, retain_inputs)
         if self.retain_dro:
+            # compute_batch_nll returns per-sequence sum losses needed for DRO reweighting
+            assert (
+                self.retain_loss_type == "NLL"
+            ), "DRO only supports NLL retain loss currently."
+            retain_loss, _ = compute_batch_nll(model, retain_inputs)
             if self.log_ori_loss:
                 self.log({"retain_loss_ori": retain_loss.clone().detach().mean().item()})
             retain_loss = -self.beta_dv_retain * torch.log(
                 torch.mean(torch.exp(-retain_loss / self.beta_dv_retain))
             )
         else:
-            retain_loss = retain_loss.mean()
+            # Use mean-per-token retain loss to match TNPO's length-normalized forget loss
+            retain_loss = self.compute_retain_loss(model=model, retain_inputs=retain_inputs)
         self.log({"retain_loss": retain_loss.item()})
 
         loss = self.gamma * forget_loss + self.alpha * retain_loss
