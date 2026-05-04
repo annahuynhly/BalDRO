@@ -58,6 +58,8 @@ def main(cfg: DictConfig):
         with mlflow.start_run(run_name=cfg.task_name):
             mlflow.log_params(wandb_config_flat)
             training(cfg)
+    else:
+        training(cfg)
 
 
 def training(cfg):
