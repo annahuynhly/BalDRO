@@ -166,6 +166,28 @@ def compute_tnpo_loss(model, ref_model, inputs, beta=1.0):
     return seq_loss, outputs
 
 
+def compute_klmin_loss(model, ref_model, inputs):
+    # Token-level KL divergence forget loss: maximizes KL(p_ref || p_theta) on forget set.
+    # Returns per-sequence -KL, length-normalized, for DRO compatibility.
+    outputs = model(**inputs)
+    labels = inputs["labels"]
+    shift_labels = labels[..., 1:].contiguous()
+    valid_mask = shift_labels != -100  # (B, T)
+
+    log_p_theta = F.log_softmax(outputs.logits[:, :-1, :], dim=-1)  # (B, T, V)
+
+    with torch.no_grad():
+        ref_outputs = ref_model(**inputs)
+    log_p_ref = F.log_softmax(ref_outputs.logits[:, :-1, :], dim=-1)  # (B, T, V)
+
+    # KL(p_ref || p_theta) per token = sum_v exp(log_p_ref_v) * (log_p_ref_v - log_p_theta_v)
+    kl_per_token = F.kl_div(log_p_theta, log_p_ref, reduction="none", log_target=True).sum(dim=-1)  # (B, T)
+
+    # Length-normalize over valid tokens, negate so minimizing loss = maximizing KL
+    seq_kl = (kl_per_token * valid_mask).sum(dim=-1) / valid_mask.sum(dim=-1).clamp(min=1)
+    return -seq_kl, outputs
+
+
 def compute_forget_group(model, forget_inputs, sampling_ratio=0.5):
     per_seq_nll, _ = compute_batch_nll(model, forget_inputs)
     valid_token_counts = (forget_inputs["labels"][..., 1:] != -100).sum(
