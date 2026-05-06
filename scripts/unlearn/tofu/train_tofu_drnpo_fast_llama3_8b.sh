@@ -12,8 +12,8 @@ holdout_split="holdout01"
 retain_split="retain99"
 
 LR="5e-5"
-BSZ=2
-GRAD_ACC=8
+BSZ=1
+GRAD_ACC=16
 EPOCHS=2
 BETA_DV=2.0
 
@@ -52,4 +52,4 @@ python src/train.py --config-name=unlearn.yaml \
     trainer.method_args.beta_dv_retain=1.0 \
     trainer.method_args.forget_dro=True \
     trainer.method_args.retain_dro=False \
-    ++trainer.method_args.log_ori_loss=True
+    trainer.args.optim=adamw_bnb_8bit

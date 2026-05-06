@@ -12,8 +12,8 @@ holdout_split="holdout01"
 retain_split="retain99"
 
 LR="5e-5"
-BSZ=2
-GRAD_ACC=8
+BSZ=1
+GRAD_ACC=16
 EPOCHS=2
 
 SUFFIX="lr${LR}_b${BSZ}_ga${GRAD_ACC}_e${EPOCHS}_fast"
@@ -46,4 +46,5 @@ python src/train.py --config-name=unlearn.yaml \
     trainer.args.gradient_accumulation_steps=${GRAD_ACC} \
     trainer.args.num_train_epochs=${EPOCHS} \
     trainer.args.eval_strategy=epoch \
-    trainer.args.eval_on_start=False
+    trainer.args.eval_on_start=False \
+    trainer.args.optim=adamw_bnb_8bit
