@@ -3,9 +3,9 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 REPORTTO="none"
 
-MODEL="Llama-2-7b-chat-hf"
-TRAINER="DrWGA"
-PRETRAINED_PATH="open-unlearning/tofu_Llama-2-7b-chat-hf_full"
+MODEL="Llama-3.1-8B-Instruct"
+TRAINER="NPO"
+PRETRAINED_PATH="open-unlearning/tofu_Llama-3.1-8B-Instruct_full"
 
 forget_split="forget01"
 holdout_split="holdout01"
@@ -15,12 +15,13 @@ LR="5e-5"
 BSZ=2
 GRAD_ACC=8
 EPOCHS=2
-BETA=1.0
-BETA_DV=2.0
 
-SUFFIX="lr${LR}_b${BSZ}_ga${GRAD_ACC}_beta${BETA}_betaDV${BETA_DV}_e${EPOCHS}_fast"
+SUFFIX="lr${LR}_b${BSZ}_ga${GRAD_ACC}_e${EPOCHS}_fast"
 TASK_NAME="unlearn_tofu_${MODEL}_${forget_split}_${TRAINER}_${SUFFIX}"
 OUTPUT_DIR="./saves/unlearn/tofu/${forget_split}/${MODEL}/${TRAINER}/${SUFFIX}"
+
+# Requires: saves/eval/tofu_${MODEL}_${retain_split}/TOFU_EVAL.json
+# Generate retain eval before running if it does not exist.
 
 python src/train.py --config-name=unlearn.yaml \
     experiment=unlearn/tofu/default \
@@ -45,10 +46,4 @@ python src/train.py --config-name=unlearn.yaml \
     trainer.args.gradient_accumulation_steps=${GRAD_ACC} \
     trainer.args.num_train_epochs=${EPOCHS} \
     trainer.args.eval_strategy=epoch \
-    trainer.args.eval_on_start=False \
-    trainer.method_args.beta=${BETA} \
-    trainer.method_args.beta_dv_forget=${BETA_DV} \
-    trainer.method_args.beta_dv_retain=1.0 \
-    trainer.method_args.forget_dro=True \
-    trainer.method_args.retain_dro=False \
-    ++trainer.method_args.log_ori_loss=True
+    trainer.args.eval_on_start=False
