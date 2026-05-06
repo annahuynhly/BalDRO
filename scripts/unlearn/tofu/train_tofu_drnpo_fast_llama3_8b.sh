@@ -52,4 +52,4 @@ python src/train.py --config-name=unlearn.yaml \
     trainer.method_args.beta_dv_retain=1.0 \
     trainer.method_args.forget_dro=True \
     trainer.method_args.retain_dro=False \
-    trainer.args.optim=adamw_bnb_8bit
+    trainer.args.optim=paged_adamw_8bit

@@ -47,4 +47,4 @@ python src/train.py --config-name=unlearn.yaml \
     trainer.args.num_train_epochs=${EPOCHS} \
     trainer.args.eval_strategy=epoch \
     trainer.args.eval_on_start=False \
-    trainer.args.optim=adamw_bnb_8bit
+    trainer.args.optim=paged_adamw_8bit
