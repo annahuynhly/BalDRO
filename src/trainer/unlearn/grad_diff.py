@@ -51,9 +51,13 @@ class GradDiff(UnlearnTrainer):
             ref_model = copy.deepcopy(model).to(self.accelerator.device)
             ref_model.eval()
             return self._prepare_deepspeed(ref_model)
-        # CPU offload: deepcopy lands on GPU briefly, then moves to CPU.
+        # CPU offload: move model to CPU first so deepcopy never peaks at 2x GPU.
         # Frees ~16 GB on a 40 GB GPU, making 8B model training feasible.
-        cpu_ref = copy.deepcopy(model).cpu()
+        device = next(model.parameters()).device
+        model.cpu()
+        cpu_ref = copy.deepcopy(model)
+        model.to(device)
+        torch.cuda.empty_cache()
         return CPURefModel(cpu_ref)
 
     def compute_retain_loss(self, model, retain_inputs):
