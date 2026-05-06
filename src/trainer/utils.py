@@ -101,19 +101,23 @@ def compute_undial_loss(model, ref_model, inputs, beta):
 
 
 def compute_wga_loss(model, inputs, beta):
+    # Per-sequence length-normalized WGA loss for DRO compatibility.
+    # Returns negative values; more negative = stronger gradient signal on forget tokens.
     outputs = model(**inputs)
     labels = inputs["labels"]
     labels = labels.to(outputs.logits.device)
 
     shift_logits = outputs.logits[..., :-1, :].contiguous()
     shift_labels = labels[..., 1:].contiguous()
+    valid_mask = shift_labels != -100  # (B, T)
 
     lm_loss = nn.CrossEntropyLoss(ignore_index=-100, reduction="none")(
         shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)
-    )
-    weight_ce = ((-lm_loss).exp().detach()) ** beta
-    forget_loss = -(weight_ce * lm_loss)[shift_labels.view(-1) != -100].mean()
-    return forget_loss, outputs
+    ).view(shift_labels.shape)  # (B, T)
+
+    weight_ce = ((-lm_loss).exp().detach()) ** beta  # (B, T)
+    seq_loss = -(weight_ce * lm_loss * valid_mask).sum(dim=-1) / valid_mask.sum(dim=-1).clamp(min=1)
+    return seq_loss, outputs
 
 
 def compute_satimp_loss(model, inputs, beta1, beta2):

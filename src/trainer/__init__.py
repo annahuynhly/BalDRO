@@ -13,6 +13,7 @@ from trainer.unlearn.satimp import DrSatImp, GroupSatImp, SatImp
 from trainer.unlearn.simnpo import DrSimNPO, GroupSimNPO, SimNPO
 from trainer.unlearn.tnpo import TNPO, DrTNPO
 from trainer.unlearn.klmin import KLMin, DrKLMin
+from trainer.unlearn.wga import WGA, DrWGA
 
 logger = logging.getLogger(__name__)
 
@@ -103,3 +104,6 @@ _register_trainer(DrTNPO)
 
 _register_trainer(KLMin)
 _register_trainer(DrKLMin)
+
+_register_trainer(WGA)
+_register_trainer(DrWGA)
