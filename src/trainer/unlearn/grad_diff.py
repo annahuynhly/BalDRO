@@ -1,7 +1,39 @@
 import copy
+from types import SimpleNamespace
+
+import torch
 
 from trainer.unlearn.base import UnlearnTrainer
 from trainer.utils import compute_kl_divergence
+
+
+class CPURefModel:
+    """Reference model kept on CPU to free ~16 GB of GPU memory for 8B+ models.
+
+    All callers use it inside torch.no_grad(), so CPU-side inference is safe.
+    Inputs are moved to CPU, outputs (logits only) are moved back to the
+    original device so downstream GPU computations work unchanged.
+    """
+
+    def __init__(self, model):
+        self._model = model.eval()
+
+    def __call__(self, **kwargs):
+        target_device = next(
+            (v.device for v in kwargs.values() if isinstance(v, torch.Tensor)),
+            None,
+        )
+        cpu_inputs = {
+            k: v.cpu() if isinstance(v, torch.Tensor) else v
+            for k, v in kwargs.items()
+        }
+        with torch.inference_mode():
+            out = self._model(**cpu_inputs)
+        logits = out.logits.to(target_device) if target_device is not None else out.logits
+        return SimpleNamespace(logits=logits)
+
+    def eval(self):
+        return self
 
 
 class GradDiff(UnlearnTrainer):
@@ -15,13 +47,14 @@ class GradDiff(UnlearnTrainer):
             self.ref_model = self._prepare_ref_model(self.model)
 
     def _prepare_ref_model(self, model):
-        ref_model = copy.deepcopy(model).to(self.accelerator.device)
-        ref_model.eval()
         if self.is_deepspeed_enabled:
-            ref_model = self._prepare_deepspeed(ref_model)
-        else:
-            ref_model = self.accelerator.prepare_model(ref_model, evaluation_mode=True)
-        return ref_model
+            ref_model = copy.deepcopy(model).to(self.accelerator.device)
+            ref_model.eval()
+            return self._prepare_deepspeed(ref_model)
+        # CPU offload: deepcopy lands on GPU briefly, then moves to CPU.
+        # Frees ~16 GB on a 40 GB GPU, making 8B model training feasible.
+        cpu_ref = copy.deepcopy(model).cpu()
+        return CPURefModel(cpu_ref)
 
     def compute_retain_loss(self, model, retain_inputs):
         retain_outputs = model(**retain_inputs)
