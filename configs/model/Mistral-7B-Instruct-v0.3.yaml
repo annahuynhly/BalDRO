@@ -1,0 +1,13 @@
+model_args:
+  pretrained_model_name_or_path: ???
+  attn_implementation: 'flash_attention_2'
+  torch_dtype: bfloat16
+tokenizer_args:
+  pretrained_model_name_or_path: ???
+template_args:
+  apply_chat_template: true
+  system_prompt: null
+  user_start_tag: "[INST] "
+  user_end_tag: " [/INST]"
+  asst_start_tag: ""
+  asst_end_tag: "</s>"

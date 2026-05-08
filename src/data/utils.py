@@ -56,17 +56,22 @@ def preprocess_chat_instance(
         for prompt, response in zip(prompt_msgs, response_msgs):
             chat += [{"role": "user", "content": prompt}]
             chat += [{"role": "assistant", "content": response}]
+        extra_kwargs = {}
         date_str = template_config.get("date_string", None)
-        date_info = {"date_string": date_str} if date_str is not None else {}
+        if date_str is not None:
+            extra_kwargs["date_string"] = date_str
+        enable_thinking = template_config.get("enable_thinking", None)
+        if enable_thinking is not None:
+            extra_kwargs["enable_thinking"] = enable_thinking
         chat_ids = tokenizer.apply_chat_template(
-            chat, tokenize=True, add_generation_prompt=False, **date_info
+            chat, tokenize=True, add_generation_prompt=False, **extra_kwargs
         )
         # all except last response are in-context examples
         wrapped_prompt = tokenizer.apply_chat_template(
-            chat[:-1], tokenize=False, add_generation_prompt=True, **date_info
+            chat[:-1], tokenize=False, add_generation_prompt=True, **extra_kwargs
         )
         prompt_ids = tokenizer.apply_chat_template(
-            chat[:-1], tokenize=True, add_generation_prompt=True, **date_info
+            chat[:-1], tokenize=True, add_generation_prompt=True, **extra_kwargs
         )
     else:
         wrapped_prompt = ""
