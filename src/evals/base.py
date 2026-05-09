@@ -108,8 +108,7 @@ class Evaluator:
                 **kwargs,
                 **metrics_args,
             )
-            if "agg_value" in result:
-                # logger.info(f"Result for metric {metric_name}:\t{result['agg_value']}")
+            if "agg_value" in result and result["agg_value"] is not None:
                 logger.info(
                     "Result for metric %s:\t%f", metric_name, float(result["agg_value"])
                 )
