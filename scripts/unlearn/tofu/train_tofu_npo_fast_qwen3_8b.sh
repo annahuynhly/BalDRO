@@ -45,6 +45,6 @@ python src/train.py --config-name=unlearn.yaml \
     trainer.args.per_device_train_batch_size=${BSZ} \
     trainer.args.gradient_accumulation_steps=${GRAD_ACC} \
     trainer.args.num_train_epochs=${EPOCHS} \
-    trainer.args.eval_strategy=epoch \
+    trainer.args.eval_strategy=no \
     trainer.args.eval_on_start=False \
     trainer.args.optim=paged_adamw_8bit
