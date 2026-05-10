@@ -2,7 +2,7 @@ export CUDA_VISIBLE_DEVICES=0
 
 MODEL="Mistral-7B-Instruct-v0.3"
 retain_split="retain99"
-RETAIN_PATH="./saves/train/tofu_Mistral-7B-Instruct-v0.3_retain99"
+RETAIN_PATH="$(pwd)/saves/train/tofu_Mistral-7B-Instruct-v0.3_retain99"
 
 # Generates: saves/eval/tofu_${MODEL}_${retain_split}/TOFU_EVAL.json
 # Required before running NPO/DrNPO training scripts.

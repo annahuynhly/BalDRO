@@ -2,7 +2,7 @@ export CUDA_VISIBLE_DEVICES=0
 
 MODEL="Qwen3-8B"
 retain_split="retain99"
-RETAIN_PATH="./saves/train/tofu_Qwen3-8B_retain99"
+RETAIN_PATH="$(pwd)/saves/train/tofu_Qwen3-8B_retain99"
 
 # Generates: saves/eval/tofu_${MODEL}_${retain_split}/TOFU_EVAL.json
 # Required before running NPO/DrNPO training scripts.

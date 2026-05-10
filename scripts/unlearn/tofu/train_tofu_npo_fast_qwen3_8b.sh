@@ -5,7 +5,7 @@ REPORTTO="none"
 
 MODEL="Qwen3-8B"
 TRAINER="NPO"
-PRETRAINED_PATH="./saves/train/tofu_Qwen3-8B_full"
+PRETRAINED_PATH="$(pwd)/saves/train/tofu_Qwen3-8B_full"
 
 forget_split="forget01"
 holdout_split="holdout01"

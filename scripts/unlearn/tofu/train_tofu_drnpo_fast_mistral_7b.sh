@@ -5,7 +5,7 @@ REPORTTO="none"
 
 MODEL="Mistral-7B-Instruct-v0.3"
 TRAINER="DrNPO"
-PRETRAINED_PATH="./saves/train/tofu_Mistral-7B-Instruct-v0.3_full"
+PRETRAINED_PATH="$(pwd)/saves/train/tofu_Mistral-7B-Instruct-v0.3_full"
 
 forget_split="forget01"
 holdout_split="holdout01"
