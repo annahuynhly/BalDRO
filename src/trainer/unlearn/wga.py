@@ -9,7 +9,7 @@ class WGA(GradDiff):
         super().__init__(*args, **kwargs)
         self.beta = beta
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
         forget_inputs = {
             "input_ids": forget_inputs["input_ids"],
@@ -53,7 +53,7 @@ class DrWGA(WGA):
         self.retain_dro = retain_dro
         self.log_ori_loss = log_ori_loss
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
         forget_inputs = {
             "input_ids": forget_inputs["input_ids"],

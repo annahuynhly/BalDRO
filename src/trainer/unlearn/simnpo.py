@@ -11,7 +11,7 @@ class SimNPO(GradDiff):
         self.delta = delta
         self.beta = beta
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
 
         forget_labels = forget_inputs["labels"]
@@ -53,7 +53,7 @@ class DrSimNPO(SimNPO):
         self.retain_dro = retain_dro
         self.log_ori_loss = log_ori_loss
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
 
         forget_labels = forget_inputs["labels"]
@@ -112,7 +112,7 @@ class GroupSimNPO(SimNPO):
 
         self.sampling_ratio = sampling_ratio
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
 
         forget_inputs = inputs["forget"]
 

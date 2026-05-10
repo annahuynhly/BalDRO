@@ -10,7 +10,7 @@ class KLMin(GradDiff):
         if self.ref_model is None:
             self.ref_model = self._prepare_ref_model(self.model)
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
 
         forget_loss, forget_outputs = compute_klmin_loss(
@@ -52,7 +52,7 @@ class DrKLMin(KLMin):
         self.retain_dro = retain_dro
         self.log_ori_loss = log_ori_loss
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
 
         forget_loss, forget_outputs = compute_klmin_loss(

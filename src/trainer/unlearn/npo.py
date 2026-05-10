@@ -17,7 +17,7 @@ class NPO(GradDiff):
         if self.ref_model is None:
             self.ref_model = self._prepare_ref_model(self.model)
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
 
         forget_loss, forget_outputs = compute_dpo_loss(
@@ -84,7 +84,7 @@ class DrNPO(NPO):
 
         return loss, (win_outputs, lose_outputs)
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         forget_inputs = inputs["forget"]
 
         forget_loss, forget_outputs = self.compute_dpo_loss(
@@ -135,7 +135,7 @@ class GroupNPO(NPO):
 
         self.sampling_ratio = sampling_ratio
 
-    def compute_loss(self, model, inputs, return_outputs=False):
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
 
         forget_inputs = inputs["forget"]
 
