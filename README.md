@@ -1,145 +1,47 @@
 <h1 align="center">
-<b>BalDRO</b>: A Distributionally Robust Optimization based Framework for Large Language Model Unlearning
-
+Evaluating BalDRO for LLM Unlearning: Alternative Forget Objectives and Cross-Model Generalisation
 </h1>
 
 <div align="center">
-  <a href='https://arxiv.org/pdf/2601.09172'><img src='https://img.shields.io/badge/arXiv-2601.09172-red?logo=arXiv'></a>  &nbsp;
-  <a href="https://github.com/nxZhai/BalDRO"><img src="https://img.shields.io/badge/GitHub-BalDRO-94c320?logo=github"></a> &nbsp; 
-  <a href="https://www2026.thewebconf.org/calls/web4good.html"><img src="https://img.shields.io/badge/WWW26-Web4good-9E95B7"></a> &nbsp;
-  <br>
+  <a href="https://annahuynhly.github.io/pages/projects/bluedot_unlearning.html"><img src="https://img.shields.io/badge/Project-Page-blue"></a> &nbsp;
+  <a href="https://github.com/nxZhai/BalDRO"><img src="https://img.shields.io/badge/Original-BalDRO-94c320?logo=github"></a> &nbsp;
+  <a href="https://arxiv.org/pdf/2601.09172"><img src="https://img.shields.io/badge/arXiv-2601.09172-red?logo=arXiv"></a> &nbsp;
 </div>
 
-BalDRO formulates unlearning as a min–sup process, where the inner process identifies a worst-case data distribution that adaptively emphasizes hard-to-unlearn samples, while the outer process updates model parameters based on the worst-case data distribution. We instantiate this formulation through two efficient variants: BalDRO-G, a discrete GroupDRO-based approximation that focuses on high-loss subsets, and BalDRO-DV, a continuous Donsker–Varadhan dual method that enables smooth, adaptive weighting within standard LLM training pipelines.
-
-![BalDRO Overview](assets/baldro_overview.png)
-
-## 🔥 News
-
-- **[2026.01.15]** We release the code of BalDRO.
-- **[2026.01.13]** Our paper is accepted by WWW2026 (web4good track).
-
-## ⚡ Setup
-
-### Set Up the Environment
-
-```bash
-# Create and activate conda environment
-conda create -n baldro python=3.11.13
-conda activate baldro
-
-# Install dependencies
-pip install -r requirements.txt
-pip install flash-attn --no-build-isolation
-```
-
-### Dataset Preparation
-
-TOFU and MUSE benchmarks are used for evaluation.
-
-- [TOFU](https://huggingface.co/datasets/locuslab/TOFU)
-- [MUSE](https://huggingface.co/datasets/muse-bench/MUSE-News)
-
-For example, use Hugging Face CLI to download TOFU and MUSE datasets.
-
-```bash
-# TOFU benchmark
-hf download --repo-type dataset locuslab/TOFU
-
-# MUSE benchmark
-hf download --repo-type dataset muse-bench/MUSE-News
-hf download --repo-type dataset muse-bench/MUSE-Books
-```
-
-### Prepare the Original Models
-
-We use the official original models provided by Open-Unlearning and MUSE.
-
-```bash
-# TOFU Original Model
-hf download open-unlearning/tofu_Llama-2-7b-chat-hf_full
-
-# MUSE Original Model
-hf download muse-bench/MUSE-books_target
-hf download muse-bench/MUSE-news_target
-```
-
-## 🧩 Finetune
-
-We directly use the **Original Model** and **Retain Model** provided by **Open-Unlearning** to perform unlearning and evaluation.
-
-## 🧪 Unlearning
-
-We validate the effectiveness of **BalDRO** across three methods: **NPO**, **SimNPO**, and **SatImp**. The following commands allow you to run unlearning on **Llama-2-7B** using different approaches, starting from the original models released by Open-Unlearning.
-
 ---
 
-### Perform Unlearning with the Base Methods
+This repository is a fork of [BalDRO](https://github.com/nxZhai/BalDRO) (Shao et al., WWW 2026), extended as part of a BlueDot AI Safety technical project. The original repo evaluates BalDRO-DV and BalDRO-G on Llama-2-7B using NPO, SimNPO, and SatImp as forget objectives. This fork investigates two additional directions:
 
-First, we perform unlearning using the standard **NPO**, **SimNPO**, and **SatImp** methods.
+1. **Alternative forget objectives.** We test WGA (Weighted Gradient Ascent) and TNPO (Token-wise NPO) as drop-in replacements for NPO within the BalDRO-DV framework, evaluating whether the robustness gains transfer to different loss functions.
 
-```bash
-# NPO
-bash scripts/unlearn/tofu/train_tofu_npo.sh
+2. **Cross-model generalisation.** We extend experiments beyond Llama-2-7B to four additional models: Llama-3.2-1B-Instruct, Llama-3.1-8B-Instruct, Qwen3-8B, and Mistral-7B-Instruct-v0.3.
 
-# SimNPO
-bash scripts/unlearn/tofu/train_tofu_simnpo.sh
+All experiments use the TOFU benchmark (`forget01` split) and report forget quality, model utility, and gibberish rate.
 
-# SatImp
-bash scripts/unlearn/tofu/train_tofu_satimp.sh
-```
+## What's added in this fork
 
----
+- `src/trainer/unlearn/wga.py` — WGA and BalDRO-DV + WGA trainers
+- `src/trainer/unlearn/tnpo.py` — TNPO and BalDRO-DV + TNPO trainers
+- `scripts/unlearn/tofu/train_tofu_wga_fast.sh` — WGA baseline
+- `scripts/unlearn/tofu/train_tofu_drwga_fast.sh` — BalDRO-DV + WGA
+- `scripts/unlearn/tofu/train_tofu_tnpo_fast.sh` — TNPO baseline
+- `scripts/unlearn/tofu/train_tofu_drtnpo_fast.sh` — BalDRO-DV + TNPO (β_DV=2.0)
+- `scripts/unlearn/tofu/train_tofu_drtnpo_fast_bdv0.5.sh` — BalDRO-DV + TNPO (β_DV=0.5)
+- `scripts/unlearn/tofu/train_tofu_drnpo_fast.sh` — BalDRO-DV + NPO on Llama-2-7B
+- Per-model fast scripts for NPO and BalDRO-DV + NPO on Llama-3.2-1B, Llama-3.1-8B, Qwen3-8B, and Mistral-7B
+- Finetuning scripts for Qwen3-8B and Mistral-7B on TOFU (no OpenUnlearning checkpoints exist for these models)
 
-### 🚀 Perform Unlearning with _Base Methods + BalDRO-G_
+## Setup
 
-Next, we compare the results of applying **BalDRO-G** on top of **NPO**, **SimNPO**, and **SatImp**.
+Setup instructions are unchanged from the original repo. See [BalDRO](https://github.com/nxZhai/BalDRO) for environment setup, dataset preparation, and model downloads.
 
-```bash
-# NPO + BalDRO-G
-bash scripts/unlearn/tofu/train_tofu_groupnpo.sh
+For Llama-3.x models, use the pretrained TOFU checkpoints from [OpenUnlearning](https://huggingface.co/open-unlearning). For Qwen3-8B and Mistral-7B, run the finetuning scripts in `scripts/unlearn/tofu/` before unlearning.
 
-# SimNPO + BalDRO-G
-bash scripts/unlearn/tofu/train_tofu_groupsimnpo.sh
+## Acknowledgements
 
-# SatImp + BalDRO-G
-bash scripts/unlearn/tofu/train_tofu_groupsatimp.sh
-```
+This work builds on [BalDRO](https://github.com/nxZhai/BalDRO) by Shao et al. and [Open-Unlearning](https://github.com/locuslab/open-unlearning).
 
----
-
-### 🚀 Perform Unlearning with _Base Methods + BalDRO-DV_
-
-We also evaluate the effectiveness of **BalDRO-DV** when combined with **NPO**, **SimNPO**, and **SatImp**.
-
-```bash
-# NPO + BalDRO-DV
-bash scripts/unlearn/tofu/train_tofu_drnpo.sh
-
-# SimNPO + BalDRO-DV
-bash scripts/unlearn/tofu/train_tofu_drsimnpo.sh
-
-# SatImp + BalDRO-DV
-bash scripts/unlearn/tofu/train_tofu_groupsatimp.sh
-```
-
----
-
-## 📊 Evaluation
-
-We enable **evaluation at every epoch** during training, making it easy to track and compare performance changes over time. By default, we report the two most widely used metrics: **Forget Quality** and **Model Utility**.
-
-You can add or remove evaluation metrics in `configs/muse.yaml` and `configs/tofu.yaml`. For detailed implementation and metric computation, please refer to the **Open-Unlearning** source code and the corresponding paper.
-
-> **Note:** For the performance of the **Original Model** and **Retain Model**, we evaluate using the **Retain Model** provided by **Open-Unlearning**. Detailed results can be found in the `saves/eval` directory.
-
-## 🤝 Acknowledgements
-
-This work builds upon [Open-Unlearning](https://github.com/locuslab/open-unlearning), with appreciation for their contributions of the research community in this area.
-
-## 🔗 Citation
-
-If you find our work useful, please consider citing:
+## Citation
 
 ```bibtex
 @inproceedings{shao2026baldro,
@@ -151,6 +53,6 @@ If you find our work useful, please consider citing:
 }
 ```
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
